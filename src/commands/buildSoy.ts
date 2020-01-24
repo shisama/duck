@@ -1,5 +1,5 @@
 import flat from "array.prototype.flat";
-import recursive from "recursive-readdir";
+import recursive from "../recursive-readdir";
 import { DuckConfig } from "../duckconfig";
 import { logger } from "../logger";
 import { compileSoy } from "../soy";
@@ -22,8 +22,13 @@ export async function buildSoy(config: BuildSoyConfig, printConfig = false): Pro
 
 async function findSoyFiles(config: BuildSoyConfig): Promise<string[]> {
   const soyFilePromises = config.soyFileRoots.map(async p => {
-    const files = await recursive(p);
-    return files.filter(file => /\.soy$/.test(file));
+    const files: string[] = [];
+    await recursive(p, (file: string) => {
+      if (/\.soy$/.test(file)) {
+        files.push(file);
+      }
+    });
+    return files;
   });
   const soyFiles = flat(await Promise.all(soyFilePromises));
   return soyFiles;

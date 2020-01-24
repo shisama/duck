@@ -2,7 +2,7 @@ import fs from "fs";
 import pLimit from "p-limit";
 import pSettled from "p-settle";
 import path from "path";
-import recursive from "recursive-readdir";
+import recursive from "../recursive-readdir";
 import { promisify } from "util";
 import { assertString } from "../assert";
 import { resultInfoLogType } from "../cli";
@@ -161,8 +161,13 @@ export class BuildJsCompilationError extends Error {
 }
 
 async function findEntryConfigs(entryConfigDir: string): Promise<string[]> {
-  const files = await recursive(entryConfigDir);
-  return files.filter(file => /\.json$/.test(file));
+  const files: string[] = [];
+  await recursive(entryConfigDir, (file: string) => {
+    if (/\.json$/.test(file)) {
+      files.push(file);
+    }
+  });
+  return files;
 }
 
 async function createCompilerOptionsForChunks_(
